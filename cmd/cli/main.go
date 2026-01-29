@@ -5,11 +5,25 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/thiennguyenluonghoang/small-dairy/internal/services"
 )
 
 var globalReader = bufio.NewReader(os.Stdin)
 
 func main() {
+	// var op []func() //Slice chứa function
+	// op = append(op, createNewDiary_main)
+	// op = append(op, showAllDiaries_main)
+	// op = append(op, updateDiary_main)
+	// op = append(op, deleteDiary_main)
+	// for {
+	// 	if v, err := strconv.ParseInt(displayMenu_main(), 10, 64); v <= int64(len(op)) && err == nil {
+	// 		op[v-1]()
+	// 	} else {
+	// 		return
+	// 	}
+	// }
 
 	for {
 		switch displayMenu_main() {
@@ -28,6 +42,7 @@ func main() {
 
 }
 
+// ! Tách ra
 func displayMenu_main() string {
 	defer fmt.Printf("--------------------------\n")
 	fmt.Printf("Diary App\n")
@@ -50,14 +65,14 @@ func createNewDiary_main() {
 	fmt.Printf("Enter content: ")
 	content, _ := globalReader.ReadString('\n')
 
-	createDiary(title, content)
+	services.CreateDiary(title, content)
 	fmt.Printf("Add successful\n")
 }
 
 func showAllDiaries_main() {
 	fmt.Printf("List diaries: ")
 	defer fmt.Printf("--------------------------\n")
-	showAllDiaries()
+	services.ShowAllDiaries()
 }
 
 func updateDiary_main() {
@@ -66,7 +81,7 @@ func updateDiary_main() {
 	fmt.Printf("Enter id of diary u want to find: ")
 	fmt.Scan(&id)
 
-	if findDiary(id) == -1 {
+	if services.FindDiary(id) == -1 {
 		fmt.Printf("No diary\n")
 		return
 	}
@@ -74,7 +89,7 @@ func updateDiary_main() {
 	newTitle, _ := globalReader.ReadString('\n')
 	fmt.Printf("Enter new content: ")
 	newContent, _ := globalReader.ReadString('\n')
-	updateDiary(id, newTitle, newContent)
+	services.UpdateDiary(id, newTitle, newContent)
 	fmt.Printf("Diary updated!\n")
 }
 
@@ -84,12 +99,12 @@ func deleteDiary_main() {
 	fmt.Printf("Enter id of diary u want to find: ")
 	fmt.Scan(&id)
 
-	if findDiary(id) == -1 {
+	if services.FindDiary(id) == -1 {
 		fmt.Printf("No diary\n")
 		return
 	}
 
-	deleteDiary(id)
+	services.DeleteDiary(id)
 	fmt.Printf("Diary with id %d is deleted", id)
 
 }

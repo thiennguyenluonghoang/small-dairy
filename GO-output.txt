@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: GO
-Generated On: 2026-01-29 06:50:55 (Asia/Bangkok / GMT+07:00)
+Generated On: 2026-01-29 08:00:31 (Asia/Bangkok / GMT+07:00)
 Total Files Processed: 4
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -22,19 +22,33 @@ Custom File Name Pattern: {workspaceName}-output
 ================================================================================
 PROJECT STRUCTURE
 ================================================================================
-├── 📄 diary.go (354 B)
-├── 📄 diaryList.go (986 B)
-├── 📄 go.mod (63 B)
-└── 📄 main.go (2.08 KB)
+├── 📁 cmd/
+│   ├── 📁 cli/
+│   │   └── 📄 main.go (2.57 KB)
+│   └── 📁 server/
+├── 📁 config/
+├── 📁 docs/
+├── 📁 global/
+├── 📁 internal/
+│   ├── 📁 controllers/
+│   ├── 📁 models/
+│   │   └── 📄 diary.go (356 B)
+│   ├── 📁 routers/
+│   └── 📁 services/
+│       └── 📄 diary_service.go (1.05 KB)
+├── 📁 pkg/
+│   ├── 📁 logger/
+│   └── 📁 response/
+└── 📄 go.mod (63 B)
 
 ================================================================================
 PROJECT STATISTICS
 ================================================================================
 Total Files: 4
-Total Directories: 0
+Total Directories: 14
 Text Files: 3
 Binary Files: 1
-Total Size: 3.45 KB
+Total Size: 4.03 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -47,25 +61,158 @@ FILE CODE CONTENTS
 
 
 ================================================================================
-FILE: diary.go
+FILE: cmd/cli/main.go
 ================================================================================
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 354 B
+Size: 2.57 KB
 Extension: .go
 Language: go
-Location: diary.go
-Relative Path: root
-Created: 2026-01-28 10:00:20 (Asia/Bangkok / GMT+07:00)
-Modified: 2026-01-29 06:29:20 (Asia/Bangkok / GMT+07:00)
-MD5: 27b6ca1948624d45e2c2d860527a72ba
-SHA256: a17689c7b26b543ffeebce9c7433d5a9b24c730179b003e1a3a6fa555a921901
+Location: cmd/cli/main.go
+Relative Path: cmd/cli
+Created: 2026-01-28 07:31:18 (Asia/Bangkok / GMT+07:00)
+Modified: 2026-01-29 08:00:11 (Asia/Bangkok / GMT+07:00)
+MD5: 8dd900136cf47fd8faa40c67e202ba28
+SHA256: 76239d41a1c32fd1aeada414dbf3af5c5b64c51e853359bcb5856505616ce256
 Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
 package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/thiennguyenluonghoang/small-dairy/internal/services"
+)
+
+var globalReader = bufio.NewReader(os.Stdin)
+
+func main() {
+	// var op []func() //Slice chứa function
+	// op = append(op, createNewDiary_main)
+	// op = append(op, showAllDiaries_main)
+	// op = append(op, updateDiary_main)
+	// op = append(op, deleteDiary_main)
+	// for {
+	// 	if v, err := strconv.ParseInt(displayMenu_main(), 10, 64); v <= int64(len(op)) && err == nil {
+	// 		op[v-1]()
+	// 	} else {
+	// 		return
+	// 	}
+	// }
+
+	for {
+		switch displayMenu_main() {
+		case "1":
+			createNewDiary_main()
+		case "2":
+			showAllDiaries_main()
+		case "3":
+			updateDiary_main()
+		case "4":
+			deleteDiary_main()
+		default:
+			return
+		}
+	}
+
+}
+
+// ! Tách ra
+func displayMenu_main() string {
+	defer fmt.Printf("--------------------------\n")
+	fmt.Printf("Diary App\n")
+	fmt.Printf("1. Create new diary\n")
+	fmt.Printf("2. Show all diaries\n")
+	fmt.Printf("3. Update diary by Id\n")
+	fmt.Printf("4. Delete existed diary\n")
+	fmt.Printf("5. Exit app\n")
+	fmt.Printf("Enter choices (1-5): ")
+	choices, _ := globalReader.ReadString('\n')
+	return strings.TrimSpace(choices)
+}
+
+// Chưa xử lý ngoại lệ ở trong này -> Cần 1 lớp chuyên cho nhập xuất nữa, ko đc bỏ hết logic hiển thị trong controller, controller chỉ routing thôi!
+func createNewDiary_main() {
+	defer fmt.Printf("--------------------------\n")
+	fmt.Printf("Create new diary\n")
+	fmt.Printf("Enter title: ")
+	title, _ := globalReader.ReadString('\n')
+	fmt.Printf("Enter content: ")
+	content, _ := globalReader.ReadString('\n')
+
+	services.CreateDiary(title, content)
+	fmt.Printf("Add successful\n")
+}
+
+func showAllDiaries_main() {
+	fmt.Printf("List diaries: ")
+	defer fmt.Printf("--------------------------\n")
+	services.ShowAllDiaries()
+}
+
+func updateDiary_main() {
+	defer fmt.Printf("--------------------------\n")
+	var id int
+	fmt.Printf("Enter id of diary u want to find: ")
+	fmt.Scan(&id)
+
+	if services.FindDiary(id) == -1 {
+		fmt.Printf("No diary\n")
+		return
+	}
+	fmt.Printf("Enter new title: ")
+	newTitle, _ := globalReader.ReadString('\n')
+	fmt.Printf("Enter new content: ")
+	newContent, _ := globalReader.ReadString('\n')
+	services.UpdateDiary(id, newTitle, newContent)
+	fmt.Printf("Diary updated!\n")
+}
+
+func deleteDiary_main() {
+	defer fmt.Printf("--------------------------\n")
+	var id int
+	fmt.Printf("Enter id of diary u want to find: ")
+	fmt.Scan(&id)
+
+	if services.FindDiary(id) == -1 {
+		fmt.Printf("No diary\n")
+		return
+	}
+
+	services.DeleteDiary(id)
+	fmt.Printf("Diary with id %d is deleted", id)
+
+}
+
+================================================================================
+
+
+================================================================================
+FILE: internal/models/diary.go
+================================================================================
+
+FILE INFORMATION:
+----------------------------------------
+Size: 356 B
+Extension: .go
+Language: go
+Location: internal/models/diary.go
+Relative Path: internal/models
+Created: 2026-01-28 10:00:20 (Asia/Bangkok / GMT+07:00)
+Modified: 2026-01-29 07:52:51 (Asia/Bangkok / GMT+07:00)
+MD5: cf35136bd3d55290abf29f68813715b7
+SHA256: fc277436d200b6e631480109903891cb62e6bd5ee5e23f04fcd07898a95ef580
+Encoding: UTF-8
+
+FILE CONTENT:
+----------------------------------------
+package models
 
 import (
 	"fmt"
@@ -89,42 +236,44 @@ func (d Diary) String() string {
 
 
 ================================================================================
-FILE: diaryList.go
+FILE: internal/services/diary_service.go
 ================================================================================
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 986 B
+Size: 1.05 KB
 Extension: .go
 Language: go
-Location: diaryList.go
-Relative Path: root
+Location: internal/services/diary_service.go
+Relative Path: internal/services
 Created: 2026-01-28 10:05:15 (Asia/Bangkok / GMT+07:00)
-Modified: 2026-01-29 06:38:24 (Asia/Bangkok / GMT+07:00)
-MD5: 5297d46915fdea0d2e07605630fc1f28
-SHA256: 895e6c965537c41f6f23b37b4bb8eebcb5756bd4611cbfc06c386c2692f60bac
+Modified: 2026-01-29 08:00:31 (Asia/Bangkok / GMT+07:00)
+MD5: 2d713ffb08e5fa9e866702af32bd5f2b
+SHA256: d853007c763aca7a131ce5276f4bb896276dd22b07ff1dc0a02967b99d2deda4
 Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
-package main
+package services
 
 import (
 	"fmt"
 	"time"
+
+	"github.com/thiennguyenluonghoang/small-dairy/internal/models"
 )
 
-var diaryList []Diary //slice = list
-var record Diary
+var diaryList []models.Diary //slice = list
+var record models.Diary
 
-func createDiary(title string, content string) {
-	record = Diary{ID: len(diaryList) + 1, Title: title, Content: content, CreateAt: time.Now()}
+func CreateDiary(title string, content string) {
+	record = models.Diary{ID: len(diaryList) + 1, Title: title, Content: content, CreateAt: time.Now()}
 	diaryList = append(diaryList, record)
 
 }
 
 // Vi phạm nguyên tắc: Model chỉ làm việc với dữ liệu, ko routing hay in ấn gì hết
-func showAllDiaries() {
+func ShowAllDiaries() {
 	if len(diaryList) == 0 {
 		fmt.Printf("No diary")
 	}
@@ -133,7 +282,7 @@ func showAllDiaries() {
 	}
 }
 
-func findDiary(id int) int {
+func FindDiary(id int) int {
 	for index, diary := range diaryList {
 		if diary.ID == id {
 			return index
@@ -142,134 +291,16 @@ func findDiary(id int) int {
 	return -1
 }
 
-func updateDiary(id int, newTitle string, newContent string) {
-	diaryList[findDiary(id)].Title = newTitle
-	diaryList[findDiary(id)].Content = newContent
-	diaryList[findDiary(id)].CreateAt = time.Now()
+func UpdateDiary(id int, newTitle string, newContent string) {
+	diaryList[FindDiary(id)].Title = newTitle
+	diaryList[FindDiary(id)].Content = newContent
+	diaryList[FindDiary(id)].CreateAt = time.Now()
 
 }
 
-func deleteDiary(id int) {
-	var index = findDiary(id)
+func DeleteDiary(id int) {
+	var index = FindDiary(id)
 	diaryList = append(diaryList[:index], diaryList[index+1:]...)
-
-}
-
-================================================================================
-
-
-================================================================================
-FILE: main.go
-================================================================================
-
-FILE INFORMATION:
-----------------------------------------
-Size: 2.08 KB
-Extension: .go
-Language: go
-Location: main.go
-Relative Path: root
-Created: 2026-01-28 07:31:18 (Asia/Bangkok / GMT+07:00)
-Modified: 2026-01-29 06:42:14 (Asia/Bangkok / GMT+07:00)
-MD5: 84a634c9cf851f1acd46409398236cc1
-SHA256: cc1f5ff37c0cbbc4880c6fed2976528fa7a2938434e9b04fec8e62e21d9c2e51
-Encoding: UTF-8
-
-FILE CONTENT:
-----------------------------------------
-package main
-
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
-)
-
-var globalReader = bufio.NewReader(os.Stdin)
-
-func main() {
-
-	for {
-		switch displayMenu_main() {
-		case "1":
-			createNewDiary_main()
-		case "2":
-			showAllDiaries_main()
-		case "3":
-			updateDiary_main()
-		case "4":
-			deleteDiary_main()
-		default:
-			return
-		}
-	}
-
-}
-
-func displayMenu_main() string {
-	defer fmt.Printf("--------------------------\n")
-	fmt.Printf("Diary App\n")
-	fmt.Printf("1. Create new diary\n")
-	fmt.Printf("2. Show all diaries\n")
-	fmt.Printf("3. Update diary by Id\n")
-	fmt.Printf("4. Delete existed diary\n")
-	fmt.Printf("5. Exit app\n")
-	fmt.Printf("Enter choices (1-5): ")
-	choices, _ := globalReader.ReadString('\n')
-	return strings.TrimSpace(choices)
-}
-
-// Chưa xử lý ngoại lệ ở trong này -> Cần 1 lớp chuyên cho nhập xuất nữa, ko đc bỏ hết logic hiển thị trong controller, controller chỉ routing thôi!
-func createNewDiary_main() {
-	defer fmt.Printf("--------------------------\n")
-	fmt.Printf("Create new diary\n")
-	fmt.Printf("Enter title: ")
-	title, _ := globalReader.ReadString('\n')
-	fmt.Printf("Enter content: ")
-	content, _ := globalReader.ReadString('\n')
-
-	createDiary(title, content)
-	fmt.Printf("Add successful\n")
-}
-
-func showAllDiaries_main() {
-	fmt.Printf("List diaries: ")
-	defer fmt.Printf("--------------------------\n")
-	showAllDiaries()
-}
-
-func updateDiary_main() {
-	defer fmt.Printf("--------------------------\n")
-	var id int
-	fmt.Printf("Enter id of diary u want to find: ")
-	fmt.Scan(&id)
-
-	if findDiary(id) == -1 {
-		fmt.Printf("No diary\n")
-		return
-	}
-	fmt.Printf("Enter new title: ")
-	newTitle, _ := globalReader.ReadString('\n')
-	fmt.Printf("Enter new content: ")
-	newContent, _ := globalReader.ReadString('\n')
-	updateDiary(id, newTitle, newContent)
-	fmt.Printf("Diary updated!\n")
-}
-
-func deleteDiary_main() {
-	defer fmt.Printf("--------------------------\n")
-	var id int
-	fmt.Printf("Enter id of diary u want to find: ")
-	fmt.Scan(&id)
-
-	if findDiary(id) == -1 {
-		fmt.Printf("No diary\n")
-		return
-	}
-
-	deleteDiary(id)
-	fmt.Printf("Diary with id %d is deleted", id)
 
 }
 
